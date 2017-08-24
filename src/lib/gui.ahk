@@ -20,7 +20,7 @@ Gui Add, Text, x25 y66 w137 h23 +0x200, by joedf
 Gui Add, Text, x25 y91 w120 h23 +0x200, Revision: %APP_DATE%
 Gui Add, Link, x24 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
 
-Gui Show, w420 h371, %APP_NAME%
+Gui Show, w420 h371, %APP_NAME% v%APP_VERSION%
 Return
 
 GuiEscape:
@@ -47,8 +47,10 @@ RawEdit:
 	if (dLetter:=getSelectedDrive()) {
 		Gui +Disabled
 		Gui +OwnDialogs
+		Gui, Show, , %APP_NAME% v%APP_VERSION% (Raw Edit running...)
 		RunWait, notepad.exe %dLetter%:\AUTORUN.INF
 		Gui -Disabled
+		Gui, Show, , %APP_NAME% v%APP_VERSION%
 	}
 Return
 
