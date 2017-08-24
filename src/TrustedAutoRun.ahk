@@ -1,14 +1,28 @@
 #NoEnv
-#NoTrayIcon
+;#NoTrayIcon
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir%
 SetBatchLines -1
 
-DriveGet, drivelist, List, REMOVABLE
-Loop,Parse,drivelist
+USBs := getAllDrives()
+for Letter in USBs
 {
-	d := getDriveInfo(A_LoopField)
+	d := USBs[Letter]
 	Msgbox % "Removable USB Detected`nDrive: `t" d.letter "`nLabel: `t" d.label "`nSerial: `t" d.Serial
+}
+MsgBox
+
+getAllDrives() {
+	drives := Object()
+	;drives.list := ""
+	DriveGet, drivelist, List, REMOVABLE
+	Loop,Parse,drivelist
+	{
+		d := getDriveInfo(A_LoopField)
+		;Drives.list += d.letter
+		drives[d.letter] := d
+	}
+	return drives
 }
 
 getDriveInfo(d) {
