@@ -41,6 +41,14 @@ ListEvents:
 Return
 
 Setup:
+	if (dLetter:=getSelectedDrive()) {
+		Gui +Disabled
+		Gui +OwnDialogs
+		Gui, Show, , %APP_NAME% v%APP_VERSION% (Setup Wizard running...)
+		RunWait, setupwizard.ahk
+		Gui -Disabled
+		Gui, Show, , %APP_NAME% v%APP_VERSION%
+	}
 Return
 
 RawEdit:
