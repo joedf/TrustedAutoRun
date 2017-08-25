@@ -23,36 +23,106 @@ for Letter in USBs
 MsgBox
 */
 
+
+
+/*
+
+CHECK FOR Status REaDY EVERYWHERE,. funcs too
+to avoid usbs that are "ejected" but still physically connected to appear
+in refresh list, etc
+DriveGet, drivestatus, Status, %a_LoopField%:\
+      If drivestatus = Ready
+
+
+*/
+
+
+
 Gosub, initGUI
 Gosub, RefreshList
-Return
+
+; from https://autohotkey.com/board/topic/45042-detect-when-specific-usb-device-is-connected/#entry280380
+OnMessage(0x219, "notify_USB_Change") 
+Return 
+
+notify_USB_Change(wParam, lParam, msg, hwnd) 
+{ 
+	global USBs_ConnectedCount
+	global USBs_ConnectedList
+	;MsgBox, %wParam% %lParam% %msg% %hwnd%
+	oldCount := USBs_ConnectedCount
+	oldList := USBs_ConnectedList
+	Gosub, RefreshList
+
+	; Autoruns excuted only on adding a device, not on removal
+	if (USBs_ConnectedCount > oldCount) {
+		;MsgBox Insert! %USBs_ConnectedCount% > %oldCount%
+		;Msgbox %oldList%,%USBs_ConnectedList%
+		if x:=newDiff(oldList,USBs_ConnectedList) {
+			Msgbox New Device: %x%
+			; TODO!: NOT ALL Autoruns! only the newly added one!
+			trusted_autoruns()
+		}
+	}
+}
 
 initGUI:
 	#Include lib\gui.ahk
 Return
 
-RefreshList:
-	IL_Destroy(ImageListID)
-	ImageListID := IL_Create(10,5,1)
-	LV_SetImageList(ImageListID,0)
-	IL_Add(ImageListID, "shell32.dll", 8) 
+; from https://autohotkey.com/boards/viewtopic.php?p=42795#p42795
+ObjCount(o) {
+	return NumGet(&o + 4*A_PtrSize)
+}
 
-	USBs := getAllDrives()
-	iconCount := 1
-	for Letter in USBs
+ObjKeys(o) {
+	l := ""
+	for k in o
+		l .= k
+	return l
+}
+
+newDiff(old,new) {
+	Loop, Parse, new
 	{
-		d := USBs[Letter]
-		if (d.icon) {
-			IL_Add(ImageListID, d.icon, 1) 
-			iconCount += 1
-			LV_Add("Icon" iconCount, d.label " (" d.letter ":)")
-		} else {
-			LV_Add("Icon1", d.label " (" d.letter ":)")
+		if !InStr(old,A_LoopField,0)
+			return A_LoopField
+	}
+	return false
+}
+
+trusted_autoruns() {
+	global USBs
+	for dLetter in USBs
+	{
+		d := USBs[dLetter]
+		if is_trusted_USB(d) {
+			fINF := dLetter ":\AUTORUN.INF"
+			IniRead, dAction, %fINF%, AUTORUN, Open, NULL
+			dAction := dLetter ":\" dAction
+			;run, ErrorLevel, check for Successful run
+			if FileExist(dAction) {
+				MsgBox Drive: %dLetter%`nSuccess Action: %dAction%
+			} else {
+				MsgBox Drive: %dLetter%`nFailed Action: %dAction%
+			}
 		}
 	}
+}
 
-	LV_ModifyCol("Hdr")  ; Auto-adjust the column widths.
-Return
+is_trusted_USB(d) {
+	global APP_NAME
+	global APP_INI
+	onDriveSig := get_sig(d.letter)
+	serial := d.serial
+	IniRead, trustSig, %APP_INI%, %APP_NAME%, %serial%, NULL
+	if ( isValid_sig(onDriveSig) && isValid_sig(trustSig) ) {
+		StringUpper, onDriveSig, onDriveSig
+		StringUpper, trustSig, trustSig
+		return (onDriveSig == trustSig)
+	}
+	return false
+}
 
 Trust_USB(d) {
 	global APP_NAME
@@ -120,11 +190,17 @@ isValid_sig(sig) {
 
 sign_usb(driveLetter,hmac) {
 	global APP_NAME
+	fINF := driveLetter ":\AUTORUN.INF"
+	if FileExist(fINF) {
+		IniRead, rSig, %fINF%, %APP_NAME%, signature, NULL
+		; Do not resign if valid signature already exists
+		if isValid_sig(rSig) {
+			return rSig
+		}
+		FileSetAttrib, -R, %fINF%
+	}
 	uuid := CreateUUID()
 	sig := bcrypt_sha256_hmac(uuid, hmac)
-	fINF := driveLetter ":\AUTORUN.INF"
-	if FileExist(fINF)
-		FileSetAttrib, -R, %fINF%
 	IniWrite, %sig%, %fINF%, %APP_NAME%, signature
 	e := ErrorLevel
 	FileSetAttrib, +RH, %fINF%
