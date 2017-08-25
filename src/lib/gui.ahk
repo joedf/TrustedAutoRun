@@ -15,10 +15,10 @@ Gui Add, CheckBox, x10 y32 w120 h23, Run at start up
 Gui Add, CheckBox, x10 y60 w120 h23, Show notifications
 Gui Add, CheckBox, x10 y87 w159 h23, Show icon in system tray
 Gui Tab, 3
-Gui Add, Text, x24 y40 w165 h23 +0x200, %APP_NAME% v%APP_VERSION%
+Gui Add, Text, x25 y40 w165 h23 +0x200, %APP_NAME% v%APP_VERSION%
 Gui Add, Text, x25 y66 w137 h23 +0x200, by joedf
 Gui Add, Text, x25 y91 w120 h23 +0x200, Revision: %APP_DATE%
-Gui Add, Link, x24 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
+Gui Add, Link, x25 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
 
 Gui Show, w420 h371, %APP_NAME% v%APP_VERSION%
 Return
