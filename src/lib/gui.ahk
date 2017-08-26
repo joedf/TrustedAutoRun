@@ -12,8 +12,9 @@ ShowNotifications:=(!!ShowNotifications)+0
 
 Menu, tray, tip, %APP_NAME% v%APP_VERSION%
 Menu, Tray, NoStandard
-Menu, Tray, Add, &Open %APP_NAME%, WindowShowGUI
-Menu, Tray, Default, &Open %APP_NAME%
+Menu, Tray, Add, &Show/Hide %APP_NAME%, ToggleWindowShowGUI
+Menu, Tray, Default, &Show/Hide %APP_NAME%
+Menu, Tray, Click, 1
 Menu, Tray, Add, Exit, TrayExit
 
 Gui +HwndhMainWindow
@@ -37,6 +38,14 @@ Gui Add, Link, x25 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
 Gui Show, w420 h371, %APP_NAME% v%APP_VERSION%
 Return
 
+/*
+TODO : add option to eject
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+*/
+
 TrayExit:
 	gosub, WindowShowGUI
 GuiEscape:
@@ -56,6 +65,15 @@ Return
 MinimizeToTray:
 	WinHide, ahk_id %hMainWindow%
 return
+
+ToggleWindowShowGUI:
+	WinActivate, ahk_id %hMainWindow%
+	if WinActive("ahk_id " hMainWindow) {
+		Gosub, MinimizeToTray
+	} else {
+		gosub, WindowShowGUI
+	}
+Return
 
 WindowShowGUI:
 	WinShow, ahk_id %hMainWindow%
