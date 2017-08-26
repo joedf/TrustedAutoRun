@@ -7,6 +7,9 @@ IniRead,RunOnStartUp,%APP_INI%,%APP_NAME%,RunOnStartUp,0
 RunOnStartUp:=(!!RunOnStartUp)+0
 setStartUp(RunOnStartUp)
 
+IniRead,ShowNotifications,%APP_INI%,%APP_NAME%,ShowNotifications,1
+ShowNotifications:=(!!ShowNotifications)+0
+
 Gui +HwndhMainWindow
 Gui Add, Tab3, x3 y3 w416 h367, Devices|Options|About
 Gui Tab, 1
@@ -17,7 +20,7 @@ Gui Add, Button, x7 y343 w80 h23 gSetup vBtn_Setup Disabled, Setup...
 Gui Add, Button, x89 y343 w80 h23 gRawEdit vBtn_RawEdit Disabled, Raw edit...
 Gui Tab, 2
 Gui Add, CheckBox, x10 y32 w120 h23 Checked%RunOnStartUp% vChk_StartUp gChk_StartUp, Run at start up
-Gui Add, CheckBox, x10 y60 w120 h23 Disabled, Show notifications
+Gui Add, CheckBox, x10 y60 w120 h23 Checked%ShowNotifications% vChk_ShowNotifs gChk_ShowNotifs, Show notifications
 ;Gui Add, CheckBox, x10 y87 w159 h23, Show icon in system tray
 Gui Tab, 3
 Gui Add, Text, x25 y40 w165 h23 +0x200, %APP_NAME% v%APP_VERSION%
@@ -155,6 +158,11 @@ Chk_StartUp:
 	setStartUp(RunOnStartUp)
 Return
 
+Chk_ShowNotifs:
+	GuiControlGet, ShowNotifications, , Chk_ShowNotifs
+	IniWrite, %ShowNotifications%, %APP_INI%, %APP_NAME%, ShowNotifications
+Return
+
 getSelectedDrive() {
 	if (x:=LV_GetNext()) {
 		LV_GetText(dName, x)
@@ -175,6 +183,10 @@ setStartUp(query) {
 
 TrayNotif(text,opt="1",title="") {
 	global APP_NAME
+	global ShowNotifications
+	; Show notifications only if enabled
+	if (!ShowNotifications)
+		Return
 	if !StrLen(title)
 		title := APP_NAME
 	TrayTip, %title%, %text%, , %opt%
