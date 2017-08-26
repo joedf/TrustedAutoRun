@@ -33,6 +33,7 @@ in refresh list, etc
 DriveGet, drivestatus, Status, %a_LoopField%:\
       If drivestatus = Ready
 
+need EJECTION DETECTION!
 
 */
 
@@ -59,9 +60,9 @@ notify_USB_Change(wParam, lParam, msg, hwnd)
 		;MsgBox Insert! %USBs_ConnectedCount% > %oldCount%
 		;Msgbox %oldList%,%USBs_ConnectedList%
 		if x:=newDiff(oldList,USBs_ConnectedList) {
-			Msgbox New Device: %x%
+			;Msgbox New Device: %x%
 			; TODO!: NOT ALL Autoruns! only the newly added one!
-			trusted_autoruns()
+			trusted_autorun(x)
 		}
 	}
 }
@@ -91,22 +92,31 @@ newDiff(old,new) {
 	return false
 }
 
-trusted_autoruns() {
+trusted_autorun(d) {
+	global USBs
+	if !IsObject(d) {
+		d := USBs[d]
+	}
+
+	if is_trusted_USB(d) {
+		fINF := d.letter ":\AUTORUN.INF"
+		IniRead, dAction, %fINF%, AUTORUN, Open, NULL
+		dAction := d.letter ":\" dAction
+		if FileExist(dAction) {
+			;MsgBox Success Action: %dAction%
+			Run, "%dAction%", , UseErrorLevel
+			return !ErrorLevel
+		}
+	}
+	Return False
+}
+
+trusted_autorunAll() {
 	global USBs
 	for dLetter in USBs
 	{
 		d := USBs[dLetter]
-		if is_trusted_USB(d) {
-			fINF := dLetter ":\AUTORUN.INF"
-			IniRead, dAction, %fINF%, AUTORUN, Open, NULL
-			dAction := dLetter ":\" dAction
-			;run, ErrorLevel, check for Successful run
-			if FileExist(dAction) {
-				MsgBox Drive: %dLetter%`nSuccess Action: %dAction%
-			} else {
-				MsgBox Drive: %dLetter%`nFailed Action: %dAction%
-			}
-		}
+		Return trusted_autorun(d)
 	}
 }
 
@@ -150,9 +160,13 @@ getAllDrives() {
 	DriveGet, drivelist, List, REMOVABLE
 	Loop,Parse,drivelist
 	{
-		d := getDriveInfo(A_LoopField)
-		;Drives.list += d.letter
-		drives[d.letter] := d
+		DriveGet, drivestatus, Status, %A_LoopField%:\
+		If drivestatus = Ready
+		{
+			d := getDriveInfo(A_LoopField)
+			;Drives.list += d.letter
+			drives[d.letter] := d
+		}
 	}
 	return drives
 }

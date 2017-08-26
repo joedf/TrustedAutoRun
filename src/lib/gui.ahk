@@ -64,8 +64,8 @@ RefreshList:
 
 	USBs := getAllDrives()
 	USBs_ConnectedCount := ObjCount(USBs)
-	;USBs_ConnectedList := ObjKeys(USBs)
-	DriveGet, USBs_ConnectedList, list, REMOVABLE
+	USBs_ConnectedList := ObjKeys(USBs)
+	;DriveGet, USBs_ConnectedList, list, REMOVABLE
 
 	iconCount := 1
 	for dLetter in USBs
