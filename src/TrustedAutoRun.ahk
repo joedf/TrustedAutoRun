@@ -24,22 +24,6 @@ for Letter in USBs
 MsgBox
 */
 
-
-
-/*
-
-CHECK FOR Status REaDY EVERYWHERE,. funcs too
-to avoid usbs that are "ejected" but still physically connected to appear
-in refresh list, etc
-DriveGet, drivestatus, Status, %a_LoopField%:\
-      If drivestatus = Ready
-
-need EJECTION DETECTION!
-
-*/
-
-
-
 Gosub, initGUI
 Gosub, RefreshList
 

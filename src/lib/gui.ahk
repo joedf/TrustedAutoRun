@@ -77,7 +77,14 @@ RefreshList:
 		ListItem_Text := d.label " (" d.letter ":)" (trust?(" [trusted]"):(""))
 
 		if (d.icon) {
-			IL_Add(ImageListID, d.icon, 1) 
+			dIconPath := d.icon
+			dIconNum := 0
+
+			if InStr(d.icon, ",", 0) {
+				dIconPath := SubStr(d.icon, 1, InStr(d.icon,",",0,0)-1)
+				dIconNum := (SubStr(d.icon, InStr(d.icon,",",0,0)+1)) + 0
+			}
+			IL_Add(ImageListID, dIconPath, dIconNum) 
 			iconCount += 1
 			ListItem_Icon := "Icon" iconCount
 		}
