@@ -6,7 +6,7 @@ SetWorkingDir %A_ScriptDir%
 Gui Add, Custom, x20 y29 w200 h42 +0x800000 ClassButton +0x200E, Set Icon
 Gui Add, Custom, x20 y78 w200 h42 +0x800000 ClassButton +0x200E, Set Label
 Gui Add, Custom, x20 y127 w200 h42 +0x800000 ClassButton +0x200E, Set Open action
-Gui Add, Custom, x20 y176 w200 h42 +0x800000 ClassButton +0x200E, Set Action Label
+;Gui Add, Custom, x20 y176 w200 h42 +0x800000 ClassButton +0x200E, Set Action Label
 Gui Add, Button, x253 y235 w117 h23, Accept and Trust
 Gui Add, GroupBox, x7 y2 w363 h230, AUTORUN.INF Setup Wizard
 Gui Add, Button, x170 y235 w80 h23, Cancel

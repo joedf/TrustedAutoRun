@@ -150,7 +150,7 @@ Untrust:
 Return
 
 Chk_StartUp:
-	GuiControlGet, Chk_StartUp
+	GuiControlGet, RunOnStartUp, , Chk_StartUp
 	IniWrite, %RunOnStartUp%, %APP_INI%, %APP_NAME%, RunOnStartUp
 	setStartUp(RunOnStartUp)
 Return
@@ -171,4 +171,22 @@ setStartUp(query) {
 	} else {
 		FileDelete, %A_Startup%\%APP_NAME%.lnk
 	}
+}
+
+TrayNotif(text,opt="1",title="") {
+	global APP_NAME
+	if !StrLen(title)
+		title := APP_NAME
+	TrayTip, %title%, %text%, , %opt%
+	SetTimer, HideTrayTip, -10000
+}
+
+; from https://autohotkey.com/docs/commands/TrayTip.htm
+HideTrayTip() {
+    TrayTip  ; Attempt to hide it the normal way.
+    if SubStr(A_OSVersion,1,3) = "10." {
+        Menu Tray, NoIcon
+        Sleep 200  ; It may be necessary to adjust this sleep.
+        Menu Tray, Icon
+    }
 }

@@ -34,6 +34,7 @@ Return
 
 notify_USB_Change(wParam, lParam, msg, hwnd) 
 { 
+	global USBs
 	global USBs_ConnectedCount
 	global USBs_ConnectedList
 	;MsgBox, %wParam% %lParam% %msg% %hwnd%
@@ -47,8 +48,20 @@ notify_USB_Change(wParam, lParam, msg, hwnd)
 		;Msgbox %oldList%,%USBs_ConnectedList%
 		if x:=newDiff(oldList,USBs_ConnectedList) {
 			;Msgbox New Device: %x%
-			; TODO!: NOT ALL Autoruns! only the newly added one!
-			trusted_autorun(x)
+
+			d := USBs[x]
+			if is_trusted_USB(d) {
+				; NOT ALL Autoruns! only the newly added one!
+				x:=trusted_autorun(x)
+
+				;Notify of trusted usb
+				if (x)
+					TrayNotif("Trusted device detected. Autorun action initiated.")
+				Else
+					TrayNotif("Trusted device detected.")
+			} else {
+				TrayNotif("Untrusted device detected.",2)
+			}
 		}
 	}
 }
