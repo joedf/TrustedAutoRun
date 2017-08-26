@@ -3,6 +3,10 @@
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir%
 
+IniRead,RunOnStartUp,%APP_INI%,%APP_NAME%,RunOnStartUp,0
+RunOnStartUp:=(!!RunOnStartUp)+0
+setStartUp(RunOnStartUp)
+
 Gui +HwndhMainWindow
 Gui Add, Tab3, x3 y3 w416 h367, Devices|Options|About
 Gui Tab, 1
@@ -12,8 +16,8 @@ Gui Add, Button, x251 y343 w80 h23 gTrust vBtn_Trust Disabled, Trust
 Gui Add, Button, x7 y343 w80 h23 gSetup vBtn_Setup Disabled, Setup...
 Gui Add, Button, x89 y343 w80 h23 gRawEdit vBtn_RawEdit Disabled, Raw edit...
 Gui Tab, 2
-Gui Add, CheckBox, x10 y32 w120 h23, Run at start up
-Gui Add, CheckBox, x10 y60 w120 h23, Show notifications
+Gui Add, CheckBox, x10 y32 w120 h23 Checked%RunOnStartUp% vChk_StartUp gChk_StartUp, Run at start up
+Gui Add, CheckBox, x10 y60 w120 h23 Disabled, Show notifications
 ;Gui Add, CheckBox, x10 y87 w159 h23, Show icon in system tray
 Gui Tab, 3
 Gui Add, Text, x25 y40 w165 h23 +0x200, %APP_NAME% v%APP_VERSION%
@@ -145,6 +149,12 @@ Untrust:
 	Gosub, RefreshList
 Return
 
+Chk_StartUp:
+	GuiControlGet, Chk_StartUp
+	IniWrite, %RunOnStartUp%, %APP_INI%, %APP_NAME%, RunOnStartUp
+	setStartUp(RunOnStartUp)
+Return
+
 getSelectedDrive() {
 	if (x:=LV_GetNext()) {
 		LV_GetText(dName, x)
@@ -152,4 +162,13 @@ getSelectedDrive() {
 		Return dLetter
 	}
 	Return 0
+}
+
+setStartUp(query) {
+	global APP_NAME
+	if (query) {
+		FileCreateShortcut,"%A_ScriptFullPath%",%A_Startup%\%APP_NAME%.lnk,%A_WorkingDir%
+	} else {
+		FileDelete, %A_Startup%\%APP_NAME%.lnk
+	}
 }
