@@ -169,7 +169,7 @@ getAllDrives() {
 getDriveInfo(d) {
 	DriveGet,s,serial,%d%:
 	DriveGet,f,filesystem,%d%:
-	DriveGet,l,label,%d%:
+	l := getDriveLabel(d)
 	sig := get_sig(d)
 	pIcon := getDriveIcon(d)
 	return {letter:d,serial:s,filesystem:f,label:l,signature:sig,icon:pIcon}
@@ -181,6 +181,15 @@ getDriveIcon(driveLetter) {
 	if ( ErrorLevel || (pIcon=="*"))
 		Return False
 	Return driveLetter ":\" pIcon
+}
+
+getDriveLabel(driveLetter) {
+	; Prefer AUTORUN.INF label or Volume Label
+	fINF := driveLetter ":\AUTORUN.INF"
+	IniRead, dLabel, %fINF%, AUTORUN, label, *
+	if ( ErrorLevel || (dLabel=="*"))
+		DriveGet,dLabel,label,%driveLetter%:
+	Return dLabel
 }
 
 get_sig(driveLetter) {
