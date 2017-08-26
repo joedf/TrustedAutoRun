@@ -12,6 +12,7 @@ APP_DATE := "24/08/17"
 APP_VERSION := "0.0.2"
 APP_URL := "https://github.com/joedf/TrustedAutoRun"
 APP_INI := A_ScriptDir "\config.ini"
+APP_PID := DllCall("GetCurrentProcessId")
 
 /*
 USBs := getAllDrives()
@@ -43,7 +44,8 @@ Gosub, initGUI
 Gosub, RefreshList
 
 ; from https://autohotkey.com/board/topic/45042-detect-when-specific-usb-device-is-connected/#entry280380
-OnMessage(0x219, "notify_USB_Change") 
+OnMessage(0x219, "notify_USB_Change")
+SetTimer, detectEject, 500
 Return 
 
 notify_USB_Change(wParam, lParam, msg, hwnd) 
@@ -69,6 +71,15 @@ notify_USB_Change(wParam, lParam, msg, hwnd)
 
 initGUI:
 	#Include lib\gui.ahk
+Return
+
+detectEject:
+	Loop, Parse, USBs_ConnectedList
+	{
+		DriveGet, drivestatus, Status, %A_LoopField%:\
+		if drivestatus != Ready
+			PostMessage, 0x219, , , , ahk_pid %APP_PID%
+	}
 Return
 
 ; from https://autohotkey.com/boards/viewtopic.php?p=42795#p42795
