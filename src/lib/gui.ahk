@@ -10,6 +10,12 @@ setStartUp(RunOnStartUp)
 IniRead,ShowNotifications,%APP_INI%,%APP_NAME%,ShowNotifications,1
 ShowNotifications:=(!!ShowNotifications)+0
 
+Menu, tray, tip, %APP_NAME% v%APP_VERSION%
+Menu, Tray, NoStandard
+Menu, Tray, Add, &Open %APP_NAME%, WindowShowGUI
+Menu, Tray, Default, &Open %APP_NAME%
+Menu, Tray, Add, Exit, TrayExit
+
 Gui +HwndhMainWindow
 Gui Add, Tab3, x3 y3 w416 h367, Devices|Options|About
 Gui Tab, 1
@@ -31,19 +37,31 @@ Gui Add, Link, x25 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
 Gui Show, w420 h371, %APP_NAME% v%APP_VERSION%
 Return
 
+TrayExit:
+	gosub, WindowShowGUI
 GuiEscape:
 GuiClose:
-	ExitApp
+	MsgBox, 35,, The application (MinimizeToTray Enabled) will exit. `nWould you like to continue? `n(press Yes [Quit] or No [Minimize])
+	IfMsgBox No
+		Gosub, MinimizeToTray
+	else IfMsgBox Yes
+		ExitApp
+Return
 
-; Do not edit above this line
+GuiSize:
+	if Instr(A_EventInfo,"1")
+		Gosub, MinimizeToTray
+Return
 
 MinimizeToTray:
-	;TODO
-	;/////////////////////////////////
-	;/////////////////////////////////
-	;/////////////////////////////////
-	;/////////////////////////////////
+	WinHide, ahk_id %hMainWindow%
 return
+
+WindowShowGUI:
+	WinShow, ahk_id %hMainWindow%
+	Sleep, 200
+	WinActivate, ahk_id %hMainWindow%
+Return
 
 ListEvents:
 	Btns := "Untrust|Trust|Setup|RawEdit"
