@@ -37,6 +37,14 @@ Menu, Tray, Default, &Show/Hide %APP_NAME%
 Menu, Tray, Click, 1
 Menu, Tray, Add, Exit, TrayExit
 
+Menu, LV_ContextMenu, Add, Open/Explore, OpenExploreDrive
+Menu, LV_ContextMenu, Add, Properties, OpenDriveProperties
+Menu, LV_ContextMenu, Add, Execute Open Action, ExecuteDriveAction
+;Menu, LV_ContextMenu, Add, Trust, DummyLabel
+;Menu, LV_ContextMenu, Add, Untrust, DummyLabel
+Menu, LV_ContextMenu, Add ; separator
+Menu, LV_ContextMenu, Add, Eject Device, EjectTheDrive
+
 Gui +HwndhMainWindow
 Gui Add, Tab3, x3 y3 w416 h367, Devices|Options|About
 Gui Tab, 1
@@ -119,17 +127,75 @@ ListEvents:
 	Btns := "Untrust|Trust|Setup|RawEdit"
 	if (dLetter:=getSelectedDrive()) {
 		if InStr(A_GuiControlEvent,"DoubleClick") {
-			run, explorer.exe "%dLetter%:\",,,xPID
+			gosub, OpenExploreDrive
 			; Workaround apparent Win7 drawing issue
-			WinWait, ahk_pid %xPID%, , 0
-			WinSet, Redraw, , ahk_id %hMainWindow%
+			;WinWait, ahk_pid %xPID%, , 0
+			;WinSet, Redraw, , ahk_id %hMainWindow%
 		}
+		/* handled with LV_ContextMenu
+		if InStr(A_GuiControlEvent, "RightClick") {
+			ToolTip, RClick %A_Now%
+		}
+		*/
 		Loop, Parse, Btns, |
 			GuiControl, Enable, Btn_%A_LoopField%
 	} else {
 		Loop, Parse, Btns, |
 			GuiControl, Disable, Btn_%A_LoopField%
 	}
+Return
+
+GuiContextMenu:  ; Launched in response to a right-click or press of the Apps key.
+	if A_GuiControl = List_Devices
+		Gosub, LV_ContextMenu
+return
+
+LV_ContextMenu:
+	if (dLetter:=getSelectedDrive()) {
+		Menu, LV_ContextMenu, Show, %A_GuiX%, %A_GuiY%
+	}
+Return
+
+OpenExploreDrive:
+	run, Explore "%dLetter%:\",,,xPID
+Return
+
+OpenDriveProperties:
+	run, Properties "%dLetter%:\",,,xPID
+Return
+
+EjectTheDrive:
+	dLabel := getDriveLabel(dLetter)
+	dText := dlabel " (" dLetter ":)"
+	MsgBox, 8484, , Are you sure you want to eject this device?`n`n%dText%
+	IfMsgBox, Yes
+	{
+		e := Eject(dLetter)
+		l := ErrorLevel
+		a := A_LastError
+		if (!e || a || l) {
+			MsgBox, 8240, , An error occured while ejecting this device:`n`n%dText%`n`nError code: E0%e%EL0%l%AL0%a%
+		} else {
+			TrayNotif("The device " dText " can now be safely removed.")
+		}
+	}
+Return
+
+ExecuteDriveAction:
+	if is_trusted_USB(dLetter) {
+		x:=trusted_autorun(dLetter)
+		if (x)
+			TrayNotif("Trusted autorun action initiated.")
+		else
+			TrayNotif("The device has no open action defined.",2)
+	} else {
+		dLabel := getDriveLabel(dLetter)
+		dText := dlabel " (" dLetter ":)"
+		MsgBox, 16, , This is an untrusted device!`nYou must set the device as trusted first.`n`n%dText%`n
+	}
+Return
+
+DummyLabel:
 Return
 
 RefreshList:
@@ -265,7 +331,7 @@ TrayNotif(text,opt="1",title="") {
 	if !StrLen(title)
 		title := APP_NAME
 	TrayTip, %title%, %text%, , %opt%
-	SetTimer, HideTrayTip, -10000
+	SetTimer, HideTrayTip, -5000
 }
 
 ; from https://autohotkey.com/docs/commands/TrayTip.htm

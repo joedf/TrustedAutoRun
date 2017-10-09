@@ -6,10 +6,11 @@ SetBatchLines -1
 
 #Include lib\uuid.ahk
 #Include lib\bcrypt_sha256_hmac.ahk
+#Include lib\Eject.ahk
 
 APP_NAME := "TrustedAutoRun"
-APP_DATE := "8/10/17"
-APP_VERSION := "0.5.2"
+APP_DATE := "9/10/17"
+APP_VERSION := "0.6.1"
 APP_URL := "https://github.com/joedf/TrustedAutoRun"
 APP_INI := A_ScriptDir "\config.ini"
 APP_PID := DllCall("GetCurrentProcessId")
@@ -132,6 +133,10 @@ trusted_autorunAll() {
 is_trusted_USB(d) {
 	global APP_NAME
 	global APP_INI
+	global USBs
+	if !IsObject(d) {
+		d := USBs[d]
+	}
 	onDriveSig := get_sig(d.letter)
 	serial := d.serial
 	IniRead, trustSig, %APP_INI%, %APP_NAME%, %serial%, NULL
