@@ -8,11 +8,12 @@ SetBatchLines -1
 #Include lib\bcrypt_sha256_hmac.ahk
 
 APP_NAME := "TrustedAutoRun"
-APP_DATE := "26/08/17"
-APP_VERSION := "0.5.1"
+APP_DATE := "8/10/17"
+APP_VERSION := "0.5.2"
 APP_URL := "https://github.com/joedf/TrustedAutoRun"
 APP_INI := A_ScriptDir "\config.ini"
 APP_PID := DllCall("GetCurrentProcessId")
+IniRead, APP_DARKTHEME, %APP_INI%, %APP_NAME%, DarkTheme, 0
 
 /*
 USBs := getAllDrives()

@@ -3,6 +3,26 @@
 #SingleInstance Force
 SetWorkingDir %A_ScriptDir%
 
+
+#Include lib\utils.ahk
+#Include lib\Class_ImageButton.ahk
+
+if (APP_DARKTHEME) {
+	GUI_COLOR_FONT := 0xC0C0C0
+	GUI_COLOR_BG := 0x333333
+	GUI_COLOR_LVBG := 0x191919
+	PROGRESSBAR_COLOR_OPTS := "CW333333 CTC0C0C0 CBFEFEFE"
+	APP_DARKTHEME_LV_OPTS := "+Background" GUI_COLOR_LVBG " c" GUI_COLOR_FONT
+	Gui Color, %GUI_COLOR_BG%
+	Gui Font, c%GUI_COLOR_FONT%
+	ImageButton.SetGuiColor(GUI_COLOR_BG)
+	Opt1 := {1:3, 2:0x424242, 3:0x323232, 4:GUI_COLOR_FONT, 7: "black", 8:(HighDPI()+1)} ; normal background & text colors
+	Opt2 := {2: 0x474747, 3: 0x353535, 4: 0xFFFFFF} ; hot background & text colors (object syntax)
+	Opt3 := {2: 0x1A3B5A, 3: 0x22476B, 4: 0xFFFFFF} ; pressed text color (object syntax)
+	Opt4 := {2: 0x1A1A1A, 3: 0x2A2A2A, 4: 0x6F6F6F} ; PBS_DISABLED
+}
+
+
 IniRead,RunOnStartUp,%APP_INI%,%APP_NAME%,RunOnStartUp,0
 RunOnStartUp:=(!!RunOnStartUp)+0
 setStartUp(RunOnStartUp)
@@ -20,20 +40,30 @@ Menu, Tray, Add, Exit, TrayExit
 Gui +HwndhMainWindow
 Gui Add, Tab3, x3 y3 w416 h367, Devices|Options|About
 Gui Tab, 1
-Gui Add, ListView, x8 y29 w404 h312 Tile gListEvents AltSubmit vList_Devices, Devices
-Gui Add, Button, x333 y343 w80 h23 gUntrust vBtn_Untrust Disabled, Untrust
-Gui Add, Button, x251 y343 w80 h23 gTrust vBtn_Trust Disabled, Trust
-Gui Add, Button, x7 y343 w80 h23 gSetup vBtn_Setup Disabled, Setup...
-Gui Add, Button, x89 y343 w80 h23 gRawEdit vBtn_RawEdit Disabled, Raw edit...
+Gui Add, ListView, x8 y29 w404 h312 Tile gListEvents AltSubmit vList_Devices %APP_DARKTHEME_LV_OPTS% +E0x010000, Devices
+Gui Add, Button, x333 y343 w80 h23 gUntrust vBtn_Untrust Disabled hWndhBtnUntrust, Untrust
+Gui Add, Button, x251 y343 w80 h23 gTrust vBtn_Trust Disabled hWndhBtnTrust, Trust
+Gui Add, Button, x7 y343 w80 h23 gSetup vBtn_Setup Disabled hWndhBtnSetup, Setup...
+Gui Add, Button, x89 y343 w80 h23 gRawEdit vBtn_RawEdit Disabled hWndhBtnRawEdit, Raw edit...
 Gui Tab, 2
 Gui Add, CheckBox, x10 y32 w120 h23 Checked%RunOnStartUp% vChk_StartUp gChk_StartUp, Run at start up
 Gui Add, CheckBox, x10 y60 w120 h23 Checked%ShowNotifications% vChk_ShowNotifs gChk_ShowNotifs, Show notifications
+Gui Add, CheckBox, x10 y88 w200 h23 Checked%APP_DARKTHEME% vChk_DarkTheme gChk_DarkTheme, Use Dark Theme (requires restart)
 ;Gui Add, CheckBox, x10 y87 w159 h23, Show icon in system tray
 Gui Tab, 3
 Gui Add, Text, x25 y40 w165 h23 +0x200, %APP_NAME% v%APP_VERSION%
 Gui Add, Text, x25 y66 w137 h23 +0x200, by joedf
 Gui Add, Text, x25 y91 w120 h23 +0x200, Revision: %APP_DATE%
 Gui Add, Link, x25 y122 w302 h40, <a href="%APP_URL%">%APP_URL%</a>
+
+if (APP_DARKTHEME) {
+	;Custom GUI colors
+	ImageButton.Create(hBtnUntrust, Opt1, Opt2, Opt3, Opt4)
+	ImageButton.Create(hBtnTrust, Opt1, Opt2, Opt3, Opt4)
+	ImageButton.Create(hBtnSetup, Opt1, Opt2, Opt3, Opt4)
+	If !ImageButton.Create(hBtnRawEdit, Opt1, Opt2, Opt3, Opt4)
+	   MsgBox, Gui Styling Error
+}
 
 Gui Show, w420 h371, %APP_NAME% v%APP_VERSION%
 APP_SHOWN := true
@@ -201,6 +231,11 @@ Return
 Chk_ShowNotifs:
 	GuiControlGet, ShowNotifications, , Chk_ShowNotifs
 	IniWrite, %ShowNotifications%, %APP_INI%, %APP_NAME%, ShowNotifications
+Return
+
+Chk_DarkTheme:
+	GuiControlGet, DarkTheme, , Chk_DarkTheme
+	IniWrite, %DarkTheme%, %APP_INI%, %APP_NAME%, DarkTheme
 Return
 
 getSelectedDrive() {
